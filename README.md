@@ -11,6 +11,7 @@ A static, public web page that shows bird occurrence records in Ireland using th
 - Groups sightings by bird in a side list.
 - Shows a counter for sightings per bird.
 - Filters the map when a bird is selected.
+- Lazy-loads small bird thumbnails from GBIF media, with Wikimedia Commons as a fallback.
 
 ## Data source
 
