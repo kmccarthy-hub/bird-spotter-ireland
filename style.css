@@ -139,6 +139,28 @@
   text-align: center;
 }
 
+.leaflet-tooltip {
+  position: absolute;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.leaflet-tooltip-top {
+  margin-top: -6px;
+}
+
+.leaflet-tooltip-top::before {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  width: 0;
+  height: 0;
+  margin-left: -6px;
+  border: 6px solid transparent;
+  border-top-color: var(--panel);
+  content: "";
+}
+
 .leaflet-popup-content-wrapper {
   border-radius: 8px;
   padding: 1px;
@@ -225,7 +247,7 @@ input {
 }
 
 .map-badge span,
-.map-badge button {
+.clear-filter {
   display: inline-flex;
   min-height: 34px;
   align-items: center;
@@ -238,11 +260,6 @@ input {
   font-size: 0.88rem;
   font-weight: 800;
   backdrop-filter: blur(8px);
-}
-
-.map-badge button {
-  cursor: pointer;
-  border-radius: 999px;
 }
 
 .sidebar {
@@ -350,16 +367,26 @@ button:hover {
   transform: translateY(-1px);
 }
 
-.map-badge button {
+.clear-filter {
+  justify-content: center;
+  width: 34px;
+  padding: 0;
+  cursor: pointer;
   min-height: 34px;
   border-radius: 999px;
   color: var(--ink);
   background: rgba(251, 255, 248, 0.92);
+  font-size: 1.15rem;
+  line-height: 1;
 }
 
-.map-badge button:hover {
+.clear-filter:hover {
   color: #fff;
   background: var(--leaf-dark);
+}
+
+.clear-filter[hidden] {
+  display: none;
 }
 
 .summary {
@@ -503,9 +530,17 @@ button:hover {
 }
 
 .leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
+.leaflet-popup-tip,
+.leaflet-tooltip {
   color: var(--ink);
   background: var(--panel);
+}
+
+.leaflet-tooltip {
+  border: 1px solid rgba(23, 49, 42, 0.14);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 10px 26px rgba(23, 49, 42, 0.2);
 }
 
 .popup-title {
