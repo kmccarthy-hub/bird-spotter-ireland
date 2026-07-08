@@ -467,18 +467,24 @@ button:hover {
   background: #f0faed;
 }
 
-.bird-name-row {
+.bird-card-content {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 42px auto;
-  align-items: flex-start;
-  gap: 9px;
+  grid-template-columns: minmax(0, 1fr) 64px auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.bird-text {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
 }
 
 .bird-name {
   display: block;
   overflow-wrap: anywhere;
   font-weight: 950;
-  line-height: 1.18;
+  line-height: 1.12;
 }
 
 .bird-count {
@@ -494,10 +500,10 @@ button:hover {
 .bird-thumb {
   position: relative;
   display: grid;
-  width: 42px;
-  height: 42px;
+  width: 64px;
+  height: 64px;
   place-items: center;
-  align-self: center;
+  align-self: stretch;
   overflow: hidden;
   border: 1px solid rgba(23, 49, 42, 0.12);
   border-radius: 8px;
@@ -525,10 +531,10 @@ button:hover {
 .bird-science,
 .bird-locality {
   display: block;
-  margin-top: 5px;
   color: var(--muted);
   overflow-wrap: anywhere;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
+  line-height: 1.18;
 }
 
 .empty-state {
