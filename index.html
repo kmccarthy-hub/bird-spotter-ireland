@@ -12,7 +12,7 @@
       integrity="sha256-p4NxAoJBhIINfQsvPLR4r7uC3kYWQY2fQj6U7Q87e1c="
       crossorigin=""
     />
-    <link rel="stylesheet" href="style.css?v=20260708-10" />
+    <link rel="stylesheet" href="style.css?v=20260708-11" />
   </head>
   <body>
     <main class="app-shell">
@@ -20,7 +20,10 @@
         <div id="map"></div>
         <div class="map-badge" aria-live="polite">
           <span id="recordCount">0 sightings</span>
-          <button id="resetFilter" type="button">All birds</button>
+          <span id="selectedBirdLabel">All birds</span>
+          <button id="clearFilter" class="clear-filter" type="button" title="Clear filters" aria-label="Clear filters" hidden>
+            &times;
+          </button>
         </div>
       </section>
 
@@ -76,6 +79,6 @@
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
       crossorigin=""
     ></script>
-    <script src="app.js?v=20260708-10"></script>
+    <script src="app.js?v=20260708-11"></script>
   </body>
 </html>
