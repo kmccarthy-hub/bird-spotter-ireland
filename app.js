@@ -31,6 +31,8 @@ const state = {
   loadedDate: "",
   pendingDateTimer: null,
   commonNameCache: new Map(),
+  imageCache: new Map(),
+  imageObserver: null,
   scientificNameCache: new Map(),
 };
 
@@ -110,6 +112,10 @@ function countyText(record) {
 
 function commonNameKey(record) {
   return record.speciesKey || record.acceptedTaxonKey || record.taxonKey || "";
+}
+
+function imageKey(scientificName, taxonKey) {
+  return `${taxonKey || "no-key"}:${scientificName || "unknown"}`;
 }
 
 async function fetchSightings(date) {
@@ -371,6 +377,11 @@ function renderMarkers() {
 }
 
 function renderBirdList() {
+  if (state.imageObserver) {
+    state.imageObserver.disconnect();
+    state.imageObserver = null;
+  }
+
   elements.birdList.innerHTML = "";
   elements.emptyState.hidden = state.groupedBirds.length > 0;
 
@@ -384,6 +395,17 @@ function renderBirdList() {
     button.innerHTML = `
       <span class="bird-name-row">
         <span class="bird-name">${escapeHtml(bird.name)}</span>
+        <span
+          class="bird-thumb"
+          data-bird-thumb
+          data-image-key="${escapeHtml(imageKey(bird.scientificName, bird.commonNameKey))}"
+          data-taxon-key="${escapeHtml(bird.commonNameKey)}"
+          data-scientific-name="${escapeHtml(bird.scientificName)}"
+          aria-hidden="true"
+        >
+          <span class="bird-thumb-placeholder">B</span>
+          <img alt="" loading="lazy" hidden>
+        </span>
         <span class="bird-count">${bird.count}</span>
       </span>
       <span class="bird-science">${escapeHtml(bird.scientificName)}</span>
@@ -402,6 +424,161 @@ function renderBirdList() {
   });
 
   elements.birdList.append(fragment);
+  setupLazyBirdImages();
+}
+
+function setupLazyBirdImages() {
+  const thumbs = [...elements.birdList.querySelectorAll("[data-bird-thumb]")];
+  if (!thumbs.length) {
+    return;
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    thumbs.forEach((thumb) => loadBirdImage(thumb));
+    return;
+  }
+
+  state.imageObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) {
+          return;
+        }
+
+        state.imageObserver.unobserve(entry.target);
+        loadBirdImage(entry.target);
+      });
+    },
+    {
+      root: elements.birdList,
+      rootMargin: "120px",
+      threshold: 0.01,
+    }
+  );
+
+  thumbs.forEach((thumb) => state.imageObserver.observe(thumb));
+}
+
+async function loadBirdImage(thumb) {
+  if (thumb.dataset.loaded === "true") {
+    return;
+  }
+
+  thumb.dataset.loaded = "true";
+  const key = thumb.dataset.imageKey;
+  const taxonKey = thumb.dataset.taxonKey;
+  const scientificName = thumb.dataset.scientificName;
+
+  try {
+    const image = await fetchBirdImage({ key, taxonKey, scientificName });
+    if (!image?.url || !thumb.isConnected) {
+      return;
+    }
+
+    const img = thumb.querySelector("img");
+    img.src = image.url;
+    img.title = image.credit || "";
+    img.hidden = false;
+    thumb.classList.add("has-image");
+  } catch (error) {
+    thumb.classList.add("image-missing");
+  }
+}
+
+async function fetchBirdImage({ key, taxonKey, scientificName }) {
+  if (state.imageCache.has(key)) {
+    return state.imageCache.get(key);
+  }
+
+  const image =
+    (await fetchGbifImage(taxonKey)) ||
+    (await fetchWikimediaImage(scientificName));
+
+  state.imageCache.set(key, image);
+  return image;
+}
+
+async function fetchGbifImage(taxonKey) {
+  if (!taxonKey) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(`${GBIF_SPECIES_ENDPOINT}/${taxonKey}/media`);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const media = (data.results || []).find((item) => {
+      const format = String(item.format || "").toLowerCase();
+      const type = String(item.type || "").toLowerCase();
+      return item.identifier && (type.includes("stillimage") || format.startsWith("image/"));
+    });
+
+    if (!media) {
+      return null;
+    }
+
+    return {
+      url: media.identifier,
+      credit: cleanCredit(media.creator || media.publisher || "GBIF media"),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+async function fetchWikimediaImage(scientificName) {
+  if (!scientificName) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    action: "query",
+    generator: "search",
+    gsrsearch: `${scientificName} bird`,
+    gsrnamespace: "6",
+    gsrlimit: "8",
+    prop: "imageinfo",
+    iiprop: "url|mime|extmetadata",
+    iiurlwidth: "96",
+    format: "json",
+    origin: "*",
+  });
+
+  try {
+    const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`);
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const pages = Object.values(data.query?.pages || {});
+    const imageInfo = pages
+      .map((page) => page.imageinfo?.[0])
+      .find((info) => info?.thumburl && String(info.mime || "").startsWith("image/"));
+
+    if (!imageInfo) {
+      return null;
+    }
+
+    const artist = imageInfo.extmetadata?.Artist?.value?.replace(/<[^>]+>/g, "");
+    const license = imageInfo.extmetadata?.LicenseShortName?.value;
+
+    return {
+      url: imageInfo.thumburl,
+      credit: cleanCredit([artist, license, "Wikimedia Commons"].filter(Boolean).join(" | ")),
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function cleanCredit(value) {
+  return String(value || "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function renderSummary() {
@@ -456,6 +633,7 @@ async function loadDate(date) {
       return;
     }
 
+    console.error("Unable to load sightings", error);
     state.records = [];
     state.groupedBirds = [];
     state.truncated = false;
