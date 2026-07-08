@@ -361,7 +361,7 @@ function renderMarkers() {
 
     marker.on("click", () => {
       if (bird) {
-        selectBird(bird);
+        selectBird(bird, { scrollToBird: true });
       }
     });
 
@@ -676,12 +676,31 @@ function clearSelectedBird() {
   renderMarkers();
 }
 
-function selectBird(bird) {
+function selectBird(bird, options = {}) {
+  if (state.selectedBirdKey === bird.key) {
+    clearSelectedBird();
+    return;
+  }
+
   state.selectedBirdKey = bird.key;
   elements.selectedBirdLabel.textContent = bird.name;
   elements.clearFilter.hidden = false;
   renderBirdList();
   renderMarkers();
+  if (options.scrollToBird) {
+    scrollSelectedBirdIntoView();
+  }
+}
+
+function scrollSelectedBirdIntoView() {
+  window.requestAnimationFrame(() => {
+    const activeBird = elements.birdList.querySelector(".bird-card.is-active");
+    if (!activeBird) {
+      return;
+    }
+
+    elements.birdList.scrollTop = activeBird.offsetTop - elements.birdList.offsetTop;
+  });
 }
 
 elements.clearFilter.addEventListener("click", () => {
