@@ -393,8 +393,12 @@ function renderBirdList() {
     button.type = "button";
     button.className = `bird-card${state.selectedBirdKey === bird.key ? " is-active" : ""}`;
     button.innerHTML = `
-      <span class="bird-name-row">
-        <span class="bird-name">${escapeHtml(bird.name)}</span>
+      <span class="bird-card-content">
+        <span class="bird-text">
+          <span class="bird-name">${escapeHtml(bird.name)}</span>
+          <span class="bird-science">${escapeHtml(bird.scientificName)}</span>
+          <span class="bird-locality">${escapeHtml(bird.location)}</span>
+        </span>
         <span
           class="bird-thumb"
           data-bird-thumb
@@ -408,8 +412,6 @@ function renderBirdList() {
         </span>
         <span class="bird-count">${bird.count}</span>
       </span>
-      <span class="bird-science">${escapeHtml(bird.scientificName)}</span>
-      <span class="bird-locality">${escapeHtml(bird.location)}</span>
     `;
     button.addEventListener("click", () => {
       state.selectedBirdKey = bird.key;
