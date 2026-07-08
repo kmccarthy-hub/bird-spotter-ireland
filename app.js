@@ -36,14 +36,14 @@ const state = {
 
 const elements = {
   datePicker: document.querySelector("#datePicker"),
-  resetFilter: document.querySelector("#resetFilter"),
+  clearFilter: document.querySelector("#clearFilter"),
   birdList: document.querySelector("#birdList"),
   emptyState: document.querySelector("#emptyState"),
   loadingState: document.querySelector("#loadingState"),
   speciesCount: document.querySelector("#speciesCount"),
   sightingCount: document.querySelector("#sightingCount"),
   recordCount: document.querySelector("#recordCount"),
-  selectedBirdLabel: document.querySelector("#resetFilter"),
+  selectedBirdLabel: document.querySelector("#selectedBirdLabel"),
 };
 
 const map = L.map("map", {
@@ -337,7 +337,7 @@ function renderMarkers() {
       fillColor: color,
       fillOpacity: 0.92,
       opacity: 1,
-    }).bindPopup(`
+    }).bindTooltip(`
       <p class="popup-title">${escapeHtml(birdNames.get(key) || displayName(record))}</p>
       <p class="popup-meta">
         ${escapeHtml(record.scientificName || "")}<br>
@@ -345,7 +345,12 @@ function renderMarkers() {
         ${escapeHtml(record.eventDate || elements.datePicker.value)}<br>
         Source: ${escapeHtml(record.datasetName || "GBIF")}
       </p>
-    `);
+    `, {
+      direction: "top",
+      offset: [0, -8],
+      opacity: 0.98,
+      sticky: true,
+    });
 
     marker.addTo(markerLayer);
     state.markerBounds = state.markerBounds
@@ -387,6 +392,7 @@ function renderBirdList() {
     button.addEventListener("click", () => {
       state.selectedBirdKey = bird.key;
       elements.selectedBirdLabel.textContent = bird.name;
+      elements.clearFilter.hidden = false;
       renderBirdList();
       renderMarkers();
     });
@@ -421,6 +427,7 @@ async function loadDate(date) {
   state.activeRequestId = requestId;
   state.selectedBirdKey = null;
   elements.selectedBirdLabel.textContent = "All birds";
+  elements.clearFilter.hidden = true;
   setLoading(true);
   elements.emptyState.hidden = true;
   elements.birdList.innerHTML = "";
@@ -480,11 +487,16 @@ function handleDatePickerUpdate() {
 elements.datePicker.addEventListener("input", handleDatePickerUpdate);
 elements.datePicker.addEventListener("change", handleDatePickerUpdate);
 
-elements.resetFilter.addEventListener("click", () => {
+function clearSelectedBird() {
   state.selectedBirdKey = null;
   elements.selectedBirdLabel.textContent = "All birds";
+  elements.clearFilter.hidden = true;
   renderBirdList();
   renderMarkers();
+}
+
+elements.clearFilter.addEventListener("click", () => {
+  clearSelectedBird();
 });
 
 loadDate(elements.datePicker.value);
