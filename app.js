@@ -333,6 +333,7 @@ function renderMarkers() {
   visibleRecords.forEach((record) => {
     const key = birdKey(record);
     const birdIndex = state.groupedBirds.findIndex((bird) => bird.key === key);
+    const bird = state.groupedBirds[birdIndex];
     const color = markerColors[Math.max(birdIndex, 0) % markerColors.length];
     const latLng = [record.decimalLatitude, record.decimalLongitude];
     const marker = L.circleMarker(latLng, {
@@ -356,6 +357,12 @@ function renderMarkers() {
       offset: [0, -8],
       opacity: 0.98,
       sticky: true,
+    });
+
+    marker.on("click", () => {
+      if (bird) {
+        selectBird(bird);
+      }
     });
 
     marker.addTo(markerLayer);
@@ -413,13 +420,7 @@ function renderBirdList() {
         <span class="bird-count">${bird.count}</span>
       </span>
     `;
-    button.addEventListener("click", () => {
-      state.selectedBirdKey = bird.key;
-      elements.selectedBirdLabel.textContent = bird.name;
-      elements.clearFilter.hidden = false;
-      renderBirdList();
-      renderMarkers();
-    });
+    button.addEventListener("click", () => selectBird(bird));
 
     item.append(button);
     fragment.append(item);
@@ -671,6 +672,14 @@ function clearSelectedBird() {
   state.selectedBirdKey = null;
   elements.selectedBirdLabel.textContent = "All birds";
   elements.clearFilter.hidden = true;
+  renderBirdList();
+  renderMarkers();
+}
+
+function selectBird(bird) {
+  state.selectedBirdKey = bird.key;
+  elements.selectedBirdLabel.textContent = bird.name;
+  elements.clearFilter.hidden = false;
   renderBirdList();
   renderMarkers();
 }
