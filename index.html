@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bird Spotter Ireland</title>
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIINfQsvPLR4r7uC3kYWQY2fQj6U7Q87e1c="
+      crossorigin=""
+    />
+    <link rel="stylesheet" href="style.css?v=20260708-10" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="map-panel" aria-label="Ireland bird sightings map">
+        <div id="map"></div>
+        <div class="map-badge" aria-live="polite">
+          <span id="recordCount">0 sightings</span>
+          <button id="resetFilter" type="button">All birds</button>
+        </div>
+      </section>
+
+      <aside class="sidebar" aria-label="Bird sightings controls and list">
+        <header class="brand">
+          <div class="brand-mark" aria-hidden="true">B</div>
+          <div>
+            <p class="kicker">Live sightings from GBIF</p>
+            <h1>Bird Spotter Ireland</h1>
+          </div>
+        </header>
+
+        <section class="controls" aria-label="Choose sighting date">
+          <label for="datePicker">Sighting date</label>
+          <div class="date-row">
+            <input id="datePicker" type="date" />
+          </div>
+        </section>
+
+        <section class="summary" aria-live="polite">
+          <div>
+            <span class="summary-value" id="speciesCount">0</span>
+            <span class="summary-label">birds</span>
+          </div>
+          <div>
+            <span class="summary-value" id="sightingCount">0</span>
+            <span class="summary-label">sightings</span>
+          </div>
+        </section>
+
+        <section class="bird-list-panel" aria-label="Birds seen on selected date">
+          <div class="list-heading">
+            <h2>Birds seen</h2>
+            <span id="loadingState">Loading</span>
+          </div>
+          <div id="emptyState" class="empty-state" hidden>
+            Nothing flying around out there on this day
+          </div>
+          <ul id="birdList" class="bird-list"></ul>
+        </section>
+
+        <footer class="credit">
+          Data from
+          <a href="https://www.gbif.org/" target="_blank" rel="noreferrer">GBIF</a>
+          and map tiles from
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a>.
+        </footer>
+      </aside>
+    </main>
+
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    ></script>
+    <script src="app.js?v=20260708-10"></script>
+  </body>
+</html>
